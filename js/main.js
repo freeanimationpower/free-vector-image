@@ -290,8 +290,10 @@ function initExport() {
             this.value === 'png' ? 'flex' : 'none';
     });
 
-    document.getElementById('editToggleBtn').addEventListener('click', toggleEditMode);
-    document.getElementById('deletePathBtn').addEventListener('click', function () {
+    const editBtn = document.getElementById('editToggleBtn');
+    if (editBtn) editBtn.addEventListener('click', toggleEditMode);
+    const delBtn  = document.getElementById('deletePathBtn');
+    if (delBtn) delBtn.addEventListener('click', function () {
         Editor.deleteSelected();
     });
 }
