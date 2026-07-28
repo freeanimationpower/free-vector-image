@@ -22,3 +22,9 @@ export function getSVGElement(container) {
 }
 
 export function showEmpty(container, message) {
+    container.innerHTML =
+        '<div class="empty-state">' +
+        '<div class="empty-state-text">' + message + '</div>' +
+        '</div>';
+}
+
