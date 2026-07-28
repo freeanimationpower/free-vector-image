@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vectorizador — Free Animation Power</title>
+
+    <link rel="preload" href="lib/svgo/svgo.browser.js" as="script">
+    <link rel="preload" href="lib/vtracer/vtracer.wasm" as="fetch" crossorigin="anonymous">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css?v=2">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <a href="https://freeanimationpower.org" class="header-logo" target="_blank">
+            <img src="img/logo.png" alt="Free Animation Power Vectorizer" class="header-logo-img">
+        </a>
+        <div class="header-badge loading" id="engineBadge">Cargando motor</div>
+    </header>
+
+    <!-- APP -->
+    <div class="app-container">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <!-- IMPORTAR -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3>Importar Imagen</h3>
+                </div>
+                <div class="section-body">
+                    <div class="upload-zone" id="uploadZone">
+                        <span class="upload-zone-text">
+                            Arrastra una imagen o <strong>haz clic</strong> para seleccionar
+                        </span>
+                        <span class="upload-zone-hint">PNG &middot; JPG &middot; WebP &middot; Ctrl+V</span>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+                </div>
+            </div>
+
+            <!-- ESTILOS -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3>Estilo</h3>
+                </div>
+                <div class="section-body">
+                    <div class="filter-grid">
+                        <button class="filter-btn active" data-filter="color">Color</button>
+                        <button class="filter-btn" data-filter="bw">B/N</button>
+                        <button class="filter-btn" data-filter="grayscale">Grises</button>
+                        <button class="filter-btn" data-filter="posterize">Posterizar</button>
+                    </div>
+                    <div class="slider-group" id="bwSettings" style="display:none">
+                        <div class="slider-label">
+                            <span>Umbral</span>
+                            <span class="slider-value" id="thresholdVal">128</span>
+                        </div>
+                        <input type="range" id="thresholdSlider" min="0" max="255" value="128">
+                    </div>
+                    <div class="slider-group" id="posterizeSettings" style="display:none">
+                        <div class="slider-label">
+                            <span>Niveles</span>
+                            <span class="slider-value" id="posterizeVal">4</span>
+                        </div>
+                        <input type="range" id="posterizeSlider" min="2" max="16" value="4">
+                    </div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="gaussianBlurCheck">
+                        <span>Suavizar ruido JPG (Gaussian Blur)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- MOTOR -->
+            <div class="sidebar-section" id="engineSettings">
+                <div class="section-header">
+                    <h3>Motor</h3>
+                </div>
+                <div class="section-body">
+                    <div id="vtracerParams">
+                        <div class="slider-group">
+                            <div class="slider-label"><span>Modo</span></div>
+                            <div class="filter-grid" id="modeSelector">
+                                <button class="filter-btn active" data-mode="spline">Spline</button>
+                                <button class="filter-btn" data-mode="polygon">Polygon</button>
+                                <button class="filter-btn" data-mode="pixel">Pixel</button>
+                            </div>
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label"><span>Composicion</span></div>
+                            <div class="filter-grid" id="hierarchicalSelector">
+                                <button class="filter-btn active" data-hierarchical="stacked">Stacked</button>
+                                <button class="filter-btn" data-hierarchical="cutout">Cutout</button>
+                            </div>
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label">
+                                <span>Umbral esquina</span>
+                                <span class="slider-value" id="cornerVal">60&deg;</span>
+                            </div>
+                            <input type="range" id="cornerSlider" min="15" max="180" value="60">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label">
+                                <span>Suavizado</span>
+                                <span class="slider-value" id="iterationsVal">2</span>
+                            </div>
+                            <input type="range" id="iterationsSlider" min="1" max="15" value="2">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label">
+                                <span>Anti-ruido</span>
+                                <span class="slider-value" id="speckleVal">8 px</span>
+                            </div>
+                            <input type="range" id="speckleSlider" min="0" max="32" value="8">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label">
+                                <span>Precision color</span>
+                                <span class="slider-value" id="colorPrecVal">3</span>
+                            </div>
+                            <input type="range" id="colorPrecSlider" min="1" max="8" value="3">
+                        </div>
+                    </div>
+
+                    <div id="imagetracerParams" style="display:none">
+                        <div class="slider-group">
+                            <div class="slider-label">
+                                <span>Suavizado</span>
+                                <span class="slider-value" id="smoothnessVal">5</span>
+                            </div>
+                            <input type="range" id="smoothnessSlider" min="1" max="10" value="5">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label">
+                                <span>Capas color</span>
+                                <span class="slider-value" id="colorLayersVal">30</span>
+                            </div>
+                            <input type="range" id="colorLayersSlider" min="2" max="64" value="30">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label">
+                                <span>Tamano trazo</span>
+                                <span class="slider-value" id="minPathVal">8</span>
+                            </div>
+                            <input type="range" id="minPathSlider" min="2" max="32" value="8">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="vectorizeBtn" disabled>Vectorizar</button>
+
+                    <div class="loader" id="loader">
+                        <div class="spinner"></div>
+                        Procesando...
+                    </div>
+
+                    <div class="stats-bar" id="statsBar">
+                        <div class="stat-item">
+                            <span class="stat-value" id="statNodes">0</span>
+                            <span class="stat-label">Nodos</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statPaths">0</span>
+                            <span class="stat-label">Trazos</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statTime">0 ms</span>
+                            <span class="stat-label">Tiempo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPORTAR -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3>Exportar</h3>
+                </div>
+                <div class="section-body">
+                    <div class="export-row">
+                        <select class="export-select" id="exportFormat" disabled>
+                            <option value="svg">SVG (Vectorial)</option>
+                            <option value="png">PNG (Rasterizado)</option>
+                            <option value="eps">EPS (Illustrator)</option>
+                        </select>
+                    </div>
+                    <div class="resolution-options" id="resolutionOptions" style="display:none">
+                        <button class="res-option active" data-scale="1">1x</button>
+                        <button class="res-option" data-scale="2">2x</button>
+                        <button class="res-option" data-scale="4">4x</button>
+                    </div>
+                    <button class="btn btn-success" id="downloadBtn" disabled>Descargar</button>
+                </div>
+            </div>
+
+            <!-- DEBUG -->
+            <div class="sidebar-section" id="debugSection">
+                <div class="section-header">
+                    <h3>Debug</h3>
+                </div>
+                <div class="section-body">
+                    <div class="debug-status" id="debugStatus">
+                        <div class="debug-row"><span>Motor:</span><span id="debugEngine">---</span></div>
+                        <div class="debug-row"><span>Canvas:</span><span id="debugCanvas">---</span></div>
+                        <div class="debug-row"><span>Transfer:</span><span id="debugTransfer">---</span></div>
+                        <div class="debug-row"><span>Preprocess:</span><span id="debugPreprocess">---</span></div>
+                        <div class="debug-row"><span>VTracer:</span><span id="debugVtracer">---</span></div>
+                        <div class="debug-row"><span>SVGO:</span><span id="debugSvgo">---</span></div>
+                        <div class="debug-row"><span>Result:</span><span id="debugResult">---</span></div>
+                    </div>
+                    <div class="debug-log" id="debugLog"></div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- WORKSPACE -->
+        <main class="workspace">
+            <div class="view-panel" id="sourcePanel">
+                <div class="view-panel-title">Original</div>
+                <div class="view-content-wrapper">
+                    <canvas id="sourceCanvas"></canvas>
+                </div>
+                <div class="panel-zoom">
+                    <button class="zoom-btn" data-panel="source" data-action="out" title="Alejar">-</button>
+                    <span class="zoom-value" id="sourceZoomVal">100%</span>
+                    <button class="zoom-btn" data-panel="source" data-action="in" title="Acercar">+</button>
+                    <button class="zoom-btn zoom-reset" data-panel="source" data-action="reset" title="Restablecer">Reset</button>
+                </div>
+            </div>
+            <div class="view-panel" id="vectorPanel">
+                <div class="view-panel-title">Vector</div>
+                <div class="view-content-wrapper" id="vectorContentWrapper">
+                    <div class="svg-display" id="svg-container">
+                        <div class="empty-state">
+                            <div class="empty-state-text">Carga una imagen para comenzar</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-zoom">
+                    <button class="zoom-btn" data-panel="vector" data-action="out" title="Alejar">-</button>
+                    <span class="zoom-value" id="vectorZoomVal">100%</span>
+                    <button class="zoom-btn" data-panel="vector" data-action="in" title="Acercar">+</button>
+                    <button class="zoom-btn zoom-reset" data-panel="vector" data-action="reset" title="Restablecer">Reset</button>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+
+</body>
+</html>
