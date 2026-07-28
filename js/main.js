@@ -8,6 +8,7 @@ import { init as initImageLoader } from './imageLoader.js';
 import { displaySource, displayVector, showEmpty } from './renderer.js';
 import { downloadSVG, downloadPNG, downloadEPS } from './exporter.js';
 import { Debug } from './debug.js';
+import * as Editor from './vectorEditor.js';
 
 // ─── WORKER ────────────────────────────
 let worker = null;
@@ -77,7 +78,8 @@ const state = {
         optimize: 0
     },
     imagetracerParams: { smoothness: 5, colorLayers: 30, minPathSize: 8 },
-    exportScale: 1
+    exportScale: 1,
+    editMode: false
 };
 
 // ─── DOM REFS ──────────────────────────
@@ -160,6 +162,7 @@ function handleImageLoaded(img, filename) {
     state.image = img;
     state.imageName = filename ? filename.replace(/\.[^.]+$/, '') : 'imagen';
     state.svgCode = null;
+    _exitEditIfActive();
     _repaintCanvas();
     showEmpty(svgContainer, 'Presiona "Vectorizar" para procesar');
     _hideStats();
@@ -263,6 +266,7 @@ function initSidebar() {
 function _onFilterChange() {
     if (!state.image) return;
     state.svgCode = null;
+    _exitEditIfActive();
     _repaintCanvas();
     showEmpty(svgContainer, 'Presiona "Vectorizar" para procesar');
     _hideStats();
@@ -284,6 +288,11 @@ function initExport() {
     document.getElementById('exportFormat').addEventListener('change', function () {
         document.getElementById('resolutionOptions').style.display =
             this.value === 'png' ? 'flex' : 'none';
+    });
+
+    document.getElementById('editToggleBtn').addEventListener('click', toggleEditMode);
+    document.getElementById('deletePathBtn').addEventListener('click', function () {
+        Editor.deleteSelected();
     });
 }
 
@@ -331,6 +340,47 @@ function _updateUI() {
         o.style.pointerEvents = hasSVG ? 'auto' : 'none';
         o.style.opacity = hasSVG ? '1' : '0.4';
     });
+
+    // Edit mode buttons
+    const editToggle = document.getElementById('editToggleBtn');
+    const deleteBtn  = document.getElementById('deletePathBtn');
+    if (editToggle && deleteBtn) {
+        editToggle.style.display = hasSVG ? '' : 'none';
+        editToggle.textContent = state.editMode ? 'Listo' : 'Editar';
+        editToggle.classList.toggle('zoom-btn-active', state.editMode);
+        deleteBtn.style.display = (hasSVG && state.editMode) ? '' : 'none';
+    }
+}
+
+// ─── EDIT MODE ──────────────────────────
+Editor.setOnChange(function (newSVGCode) {
+    state.svgCode = newSVGCode;
+});
+
+function toggleEditMode() {
+    if (!state.svgCode) return;
+
+    state.editMode = !state.editMode;
+    const container = svgContainer;
+
+    if (state.editMode) {
+        Editor.enterEditMode(container);
+        container.style.cursor = 'default';
+    } else {
+        Editor.exitEditMode();
+        container.style.cursor = '';
+    }
+
+    _updateUI();
+}
+
+function _exitEditIfActive() {
+    if (state.editMode) {
+        state.editMode = false;
+        Editor.exitEditMode();
+        svgContainer.style.cursor = '';
+        _updateUI();
+    }
 }
 
 // ─── ZOOM ──────────────────────────────
@@ -372,6 +422,7 @@ function _initPan(panelId, panelKey, wrapperSel) {
     const z = zoom[panelKey];
 
     panel.addEventListener('mousedown', function (e) {
+        if (Editor.isEditing()) return;
         z.dragging = true;
         z.startX = e.clientX - z.panX;
         z.startY = e.clientY - z.panY;

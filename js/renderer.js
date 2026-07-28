@@ -17,9 +17,8 @@ export function displayVector(container, svgCode) {
     container.innerHTML = svgCode;
 }
 
-export function showEmpty(container, message) {
-    container.innerHTML =
-        '<div class="empty-state">' +
-        '<div class="empty-state-text">' + message + '</div>' +
-        '</div>';
+export function getSVGElement(container) {
+    return container.querySelector('svg');
 }
+
+export function showEmpty(container, message) {
