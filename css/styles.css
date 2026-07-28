@@ -67,7 +67,7 @@ html, body {
     width: auto;
 }
 .sidebar-toggle {
-    display: none;
+    display: none !important;
     flex-direction: column;
     gap: 4px;
     background: none;
@@ -628,7 +628,7 @@ input[type="range"]::-webkit-slider-thumb {
 @media (max-width: 900px) {
     body { font-size: 13px; }
 
-    .sidebar-toggle { display: flex; }
+    .sidebar-toggle { display: flex !important; }
 
     .app-container {
         flex-direction: column;
