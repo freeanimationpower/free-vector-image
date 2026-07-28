@@ -1,29 +1,25 @@
 # Vectorizador Pro — Free Animation Power
 
-Herramienta web **100% Client-Side** para convertir imágenes rasterizadas (PNG, JPG, WebP, GIF, BMP) a vectores escalables (SVG, EPS) y PNG. Motor de vectorización VTracer WebAssembly + SVGO post-procesador + ImageTracer fallback.
+Herramienta web **100% Client-Side** para convertir imágenes rasterizadas (PNG, JPG, WebP) a vectores escalables (SVG, EPS) y PNG. Motor de vectorización VTracer WebAssembly + SVGO post-procesador + ImageTracer fallback. Diseño FAP corporativo (#ffdc00 / #ff4200).
 
 ---
 
 ## Tabla de Contenidos
 
 1. [Historial Completo del Proyecto](#historial-completo-del-proyecto)
-2. [Arquitectura Final — Fase 5](#arquitectura-final--fase-5)
-3. [Estructura del Proyecto](#estructura-del-proyecto)
-4. [Módulos — Documentación Técnica Completa](#módulos--documentación-técnica-completa)
-5. [Pipeline de Vectorización](#pipeline-de-vectorización)
-6. [Sistema de Depuración (Debug)](#sistema-de-depuración-debug)
-7. [Sistema de Zoom Independiente](#sistema-de-zoom-independiente)
+2. [Fase 5 — Refactorización 2026](#fase-5--refactorización-2026)
+3. [Arquitectura Final](#arquitectura-final)
+4. [Estructura del Proyecto](#estructura-del-proyecto)
+5. [Módulos — Documentación Técnica](#módulos--documentación-técnica)
+6. [Pipeline de Vectorización](#pipeline-de-vectorización)
+7. [Sistema de Zoom + Pan](#sistema-de-zoom--pan)
 8. [Sistema de Filtros](#sistema-de-filtros)
 9. [Motor VTracer WebAssembly](#motor-vtracer-webassembly)
-10. [Motor SVGO Post-Procesador](#motor-svgo-post-procesador)
-11. [Fallback ImageTracer](#fallback-imagetracer)
-12. [Sistema de Exportación](#sistema-de-exportación)
-13. [Conversor EPS (SVG → PostScript)](#conversor-eps-svg--postscript)
-14. [Guía de Uso](#guía-de-uso)
-15. [Referencias y Fuentes](#referencias-y-fuentes)
-16. [Problemas Conocidos y Diagnóstico](#problemas-conocidos-y-diagnóstico)
-17. [Changelog](#changelog)
-18. [Licencias](#licencias)
+10. [Exportación EPS Off-Thread](#exportación-eps-off-thread)
+11. [Guía de Uso](#guía-de-uso)
+12. [Problemas Conocidos y Diagnóstico](#problemas-conocidos-y-diagnóstico)
+13. [Changelog](#changelog)
+14. [Licencias](#licencias)
 
 ---
 
@@ -111,6 +107,94 @@ Refactorización completa a ES Modules con Web Worker:
 - **Sistema Debug**: módulo `debug.js` con instrumentación en todas las etapas + panel visual
 - **Zoom independiente**: cada panel (Original/Vector) con controles dedicados `[-] [+] ⌂` + wheel scroll
 - **14 archivos** reescritos/creados, `aiOptimizer.js` y `vectorizer.js` eliminados
+
+### Refactorización 2026 — Fase 5 Definitiva
+
+Corrección de 3 cuellos de botella críticos y 4 bugs de memoria WASM, más rediseño UI completo:
+
+#### Corrección del Vector Recortado (Padding Perimetral)
+
+**Problema**: Las curvas Bézier cúbicas en los bordes de la imagen se recortaban porque VTracer no tenía margen para extender puntos de control.
+
+**Solución**: `processImageData()` en `preprocessor.js` añade padding transparente proporcional a la resolución:
+```
+PADDING = max(4, ceil(max(width, height) / 256))
+```
+- 256px → 4px padding lateral
+- 1024px → 4px padding
+- 2048px → 8px padding
+
+El padding expande el `ImageData` (width+PADDING×2, height+PADDING×2) con píxeles `rgba(0,0,0,0)` perimetrales. VTracer recibe la imagen expandida y genera paths con espacio para curvas en bordes. El viewBox se ajusta al final del pipeline para mostrar solo el área original.
+
+#### Optimización del Gaussian Blur (`_selectiveBlur3x3`)
+
+Reescrito con `Uint32Array` para lecturas de 32 bits aceleradas:
+```js
+const copy32 = new Uint32Array(copy.buffer);  // 1 lectura = 1 píxel completo
+const out32  = new Uint32Array(data.buffer);   // mutación directa empaquetada
+// Desempaquetado bitwise: R = px & 0xFF, G = (px >> 8) & 0xFF, B = (px >> 16) & 0xFF
+// Empaquetado: out32[idx] = (A << 24) | (B << 16) | (G << 8) | R
+```
+Reduce de 4 lecturas de 8 bits por píxel vecino a 1 lectura de 32 bits. División con `| 0` para truncado entero sin `Math.floor`.
+
+#### Conversor EPS en Web Worker (Off-Thread)
+
+Movido `_svgToEPS` + `_convertPathToPS` de `exporter.js` al worker para evitar bloquear la UI (strings PostScript complejos consumían muchos ciclos de CPU en Main Thread).
+
+- La conversión usa **Regex de doble pase** en vez de `DOMParser` (no disponible en Workers)
+- Soporta `fill` vía atributo directo y vía `style="fill:#xxx"`
+- Filtra `fill="none"` y `opacity="0"`
+- Maneja los 14 comandos SVG (M/m, L/l, H/h, V/v, C/c, Q/q, S/s, T/t, A/a, Z/z) con inversión `height - y`
+- Flujo: `main.js` → `worker.postMessage({type:'export-eps'})` → worker convierte → `postMessage({type:'eps-result'})` → main descarga
+
+#### Fixes de Memoria WASM
+
+| Bug | Archivo | Descripción | Fix |
+|-----|---------|-------------|-----|
+| Cache `Uint8Array` stale | `vtracerBridge.js` | La vista cacheada de memoria WASM no se invalidaba tras `memory.grow` | Alineado con patrón robusto de `_getDataViewMemory0()`: chequeo `buffer.detached` + comparación de buffers |
+| Copia innecesaria 16MB | `vtracerBridge.js` | `Uint8ClampedArray` no es `instanceof Uint8Array` → se clonaba completo | Añadido `|| rgba instanceof Uint8ClampedArray` |
+| `malloc` sin chequeo | `vtracerBridge.js` | `malloc` podía retornar 0 (NULL) → escritura en dirección 0 corrompía heap | `throw` si `ptr === 0 && arg.length > 0` |
+| `console.warn` sin `throw` | `preprocessor.js` | Mismatch dimensional solo advertía, no abortaba | Cambiado a `throw new Error` |
+
+#### Worker Recreation (One-Shot VTracer)
+
+VTracer WASM (alpha.1) corrompe su estado interno tras la primera llamada. La segunda vectorización produce `memory access out of bounds`.
+
+**Solución**: Cada vectorización usa un worker fresco. `_createWorker()` termina el worker anterior y crea uno nuevo. Se llama automáticamente tras `result` o `error`.
+
+#### Parámetros VTracer Seguros
+
+Defaults reducidos para evitar `OOM` en imágenes a color:
+```
+colorPrecision: 3 (antes 6, 512 colores vs 262K)
+hierarchical: stacked (antes cutout)
+maxIterations: 2 (antes 10)
+layerDifference: 32 (antes 16)
+```
+
+#### Protección de Canvas Post-Transfer
+
+Tras `postMessage(imageData, [imageData.data.buffer])`, el buffer queda **neutered** en Main Thread. `_repaintCanvas()` redibuja exclusivamente desde `state.image` (HTMLImageElement cacheado), nunca toca el buffer transferido.
+
+#### Zoom + Pan (Hand Tool)
+
+Arrastre con clic sostenido (estilo H de Photoshop) en ambos paneles:
+- `transform: translate(panX px, panY px) scale(level)` — pan en screen pixels, no escalado por zoom
+- Transición CSS suprimida durante drag para respuesta instantánea
+- Cursor `grab` / `grabbing`
+- Botón Reset restablece zoom + posición
+
+#### Rediseño UI — Identidad FAP
+
+- Paleta: fondo `#ffdc00`, acento `#ff4200`, superficies blancas, header negro
+- Fuentes: Outfit + Plus Jakarta Sans (Google Fonts)
+- Logo corporativo en header con link a `freeanimationpower.org`
+- Sin emojis, diseño minimalista
+- Etiquetas de panel con fondo negro y texto naranja
+
+#### MAX_SIZE Dinámico
+
+Reducido a `1024` (desde 2048) para evitar OOM en VTracer. El padding se suma después, resultando en máximo 1032 px por dimensión.
 
 ---
 
@@ -1422,6 +1506,7 @@ Para diagnosticar problemas, abrir la sección "Debug Pipeline" en la sidebar. M
 | **Fase 3** | Investigación profunda de ImageTracer.js (9 bugs documentados), VTracer, SVGO, Vectorizer.AI |
 | **Fase 4** | Pipeline unificado VTracer WASM + SVGO + ImageTracer fallback. Gaussian Blur selectivo |
 | **Fase 5** | Web Worker + ES Modules + Debug + Zoom independiente. 14 archivos reescritos. `aiOptimizer.js` y `vectorizer.js` eliminados |
+| **Fase 5.1 (2026)** | Padding perimetral + `Uint32Array` blur + EPS off-thread + Worker recreation + Pan drag + Rediseño FAP + 6 fixes WASM |
 
 ---
 
@@ -1436,4 +1521,4 @@ Para diagnosticar problemas, abrir la sección "Debug Pipeline" en la sidebar. M
 
 ---
 
-*Free Animation Power Vectorizer Pro — 100% Client-Side. Sin API keys. Sin registro. Sin backend.*
+*Free Animation Power Vectorizer — 100% Client-Side. Sin API keys. Sin registro. Sin backend.*
