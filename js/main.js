@@ -416,6 +416,10 @@ function initZoom() {
     // ─── PAN (click + arrastrar) ─────
     _initPan('sourcePanel', 'source', '#sourcePanel .view-content-wrapper');
     _initPan('vectorPanel', 'vector', '#vectorContentWrapper');
+
+    // ─── PINCH ZOOM (mobile) ──────────
+    _initPinchZoom('sourcePanel', 'source');
+    _initPinchZoom('vectorPanel', 'vector');
 }
 
 // ─── PAN HANDLERS ──────────────────────
@@ -423,28 +427,51 @@ function _initPan(panelId, panelKey, wrapperSel) {
     const panel = document.getElementById(panelId);
     const z = zoom[panelKey];
 
-    panel.addEventListener('mousedown', function (e) {
+    function startDrag(clientX, clientY) {
         if (Editor.isEditing()) return;
         z.dragging = true;
-        z.startX = e.clientX - z.panX;
-        z.startY = e.clientY - z.panY;
+        z.startX = clientX - z.panX;
+        z.startY = clientY - z.panY;
         panel.style.cursor = 'grabbing';
         _setTransition(wrapperSel, false);
-    });
+    }
 
-    document.addEventListener('mousemove', function (e) {
+    function moveDrag(clientX, clientY) {
         if (!z.dragging) return;
-        z.panX = e.clientX - z.startX;
-        z.panY = e.clientY - z.startY;
+        z.panX = clientX - z.startX;
+        z.panY = clientY - z.startY;
         _applyZoom(panelKey);
-    });
+    }
 
-    document.addEventListener('mouseup', function () {
+    function endDrag() {
         if (!z.dragging) return;
         z.dragging = false;
         panel.style.cursor = '';
         _setTransition(wrapperSel, true);
+    }
+
+    // Mouse
+    panel.addEventListener('mousedown', function (e) {
+        startDrag(e.clientX, e.clientY);
     });
+    document.addEventListener('mousemove', function (e) {
+        moveDrag(e.clientX, e.clientY);
+    });
+    document.addEventListener('mouseup', endDrag);
+
+    // Touch
+    panel.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 1) {
+            startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+    }, { passive: false });
+    panel.addEventListener('touchmove', function (e) {
+        if (e.touches.length === 1) {
+            moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+        e.preventDefault();
+    }, { passive: false });
+    panel.addEventListener('touchend', endDrag);
 }
 
 function _setTransition(wrapperSel, enable) {
@@ -452,6 +479,34 @@ function _setTransition(wrapperSel, enable) {
     if (wrapper) {
         wrapper.style.transition = enable ? '' : 'none';
     }
+}
+
+function _initPinchZoom(panelId, panelKey) {
+    const panel = document.getElementById(panelId);
+    const z = zoom[panelKey];
+    let initialDist = 0;
+
+    function getDist(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    panel.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 2) {
+            initialDist = getDist(e.touches);
+        }
+    }, { passive: true });
+
+    panel.addEventListener('touchmove', function (e) {
+        if (e.touches.length === 2 && initialDist > 0) {
+            const dist = getDist(e.touches);
+            const ratio = dist / initialDist;
+            z.level = Math.min(4.0, Math.max(0.25, z.level * ratio));
+            initialDist = dist;
+            _applyZoom(panelKey);
+        }
+    }, { passive: true });
 }
 
 function _applyZoom(panel) {
@@ -519,15 +574,3 @@ initZoom();
 initExport();
 _updateUI();
 _updateEngineBadge();
-
-// Sidebar toggle (mobile)
-var sidebarToggle = document.getElementById('sidebarToggle');
-if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function () {
-        var sidebar = document.querySelector('.sidebar');
-        if (sidebar) {
-            sidebar.classList.toggle('collapsed');
-            sidebarToggle.classList.toggle('active');
-        }
-    });
-}
