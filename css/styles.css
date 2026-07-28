@@ -66,6 +66,27 @@ html, body {
     height: 64px;
     width: auto;
 }
+.sidebar-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    z-index: 20;
+}
+.sidebar-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+.sidebar-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.sidebar-toggle.active span:nth-child(2) { opacity: 0; }
+.sidebar-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
 .header-badge {
     font-family: var(--font-heading);
     font-size: 0.75rem;
@@ -588,7 +609,7 @@ input[type="range"]::-webkit-slider-thumb {
    RESPONSIVE — Mobile & Tablet
    ═══════════════════════════════════════ */
 
-/* Tablet: 901px — 1100px — sidebar mas estrecha */
+/* Small desktop: 901px — 1100px — sidebar mas estrecha */
 @media (max-width: 1100px) {
     .sidebar {
         width: 260px;
@@ -603,80 +624,106 @@ input[type="range"]::-webkit-slider-thumb {
     .btn { font-size: 0.78rem; padding: 8px 12px; }
 }
 
-/* Tablet vertical / landscape phone: 641px — 900px */
+/* Mobile + Tablet vertical: hasta 900px — layout apilado */
 @media (max-width: 900px) {
+    body { font-size: 13px; }
+
+    .sidebar-toggle { display: flex; }
+
     .app-container {
         flex-direction: column;
         height: calc(100vh - 56px);
     }
+
     .sidebar {
         width: 100%;
         min-width: 100%;
-        max-height: 45%;
+        max-height: 35vh;
         overflow-y: auto;
         border-right: none;
         border-bottom: 2px solid var(--accent);
         flex-shrink: 0;
+        padding: 8px 12px;
+        transition: max-height 0.3s ease, padding 0.3s ease;
     }
+    .sidebar.collapsed {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        overflow: hidden;
+    }
+
     .workspace {
         flex: 1;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
         min-height: 0;
     }
+
+    .view-panel {
+        flex: 1;
+        min-height: 150px;
+    }
+
     .header-logo-img { height: 36px; }
     .header { padding: 8px 16px; }
     .header-badge { font-size: 0.65rem; padding: 3px 10px; }
+
+    .section-header { padding: 3px 2px; }
     .section-header h3 { font-size: 0.7rem; }
     .section-body { gap: 6px; }
-    .panel-zoom { gap: 2px; padding: 3px 6px; }
-    .zoom-value { min-width: 30px; font-size: 0.65rem; }
+
+    .upload-zone { padding: 14px 8px; }
+    .upload-zone-text { font-size: 0.78rem; }
+    .upload-zone-hint { font-size: 0.65rem; }
+
+    .filter-btn { font-size: 0.7rem; padding: 6px 4px; }
+    .btn { font-size: 0.78rem; padding: 8px 12px; }
+
+    .panel-zoom { gap: 2px; padding: 3px 6px; margin-bottom: 4px; }
+    .zoom-btn { width: 22px; height: 22px; font-size: 0.95rem; }
+    .zoom-reset { padding: 0 7px; font-size: 0.65rem; }
+    .zoom-value { min-width: 32px; font-size: 0.65rem; }
+    .zoom-edit-btn, .zoom-del-btn { font-size: 0.65rem; padding: 0 8px; }
+
+    .view-panel-title { top: 6px; left: 6px; padding: 2px 10px; font-size: 0.65rem; }
+
+    .stats-bar { padding: 6px 0; }
+    .stat-value { font-size: 0.9rem; }
+    .stat-label { font-size: 0.6rem; }
+
+    .debug-log { max-height: 100px; font-size: 0.6rem; }
+    .empty-state-text { font-size: 0.82rem; }
+
+    input[type="range"]::-webkit-slider-thumb { width: 12px; height: 12px; }
 }
 
-/* Phone: hasta 640px */
-@media (max-width: 640px) {
-    body { font-size: 13px; }
-    .app-container {
-        flex-direction: column;
-        height: calc(100vh - 50px);
-    }
+/* Phone estrecho: hasta 480px — sidebar colapsable */
+@media (max-width: 480px) {
     .sidebar {
-        max-height: 40%;
-        padding: 8px 10px;
+        max-height: 32vh;
+        padding: 6px 8px;
     }
-    .workspace {
-        flex-direction: column;
-        gap: 6px;
-        padding: 6px;
+    .sidebar.collapsed {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        overflow: hidden;
     }
-    .view-panel {
-        min-height: 120px;
-    }
-    .header {
-        padding: 6px 12px;
-    }
+    .workspace { gap: 6px; padding: 4px; }
+    .view-panel { min-height: 100px; }
     .header-logo-img { height: 28px; }
-    .header-badge { font-size: 0.6rem; padding: 2px 8px; display: none; }
-    .section-header { padding: 3px 2px; }
-    .section-header h3 { font-size: 0.68rem; }
-    .section-body { gap: 4px; }
-    .upload-zone { padding: 12px 8px; }
-    .upload-zone-text { font-size: 0.75rem; }
-    .upload-zone-hint { font-size: 0.65rem; }
+    .header { padding: 6px 10px; }
+    .header-badge { display: none; }
     .filter-grid { gap: 3px; }
-    .filter-btn { font-size: 0.68rem; padding: 5px 3px; }
-    .btn { font-size: 0.75rem; padding: 7px 10px; }
-    input[type="range"] { height: 3px; }
-    input[type="range"]::-webkit-slider-thumb { width: 12px; height: 12px; }
-    .panel-zoom { gap: 1px; padding: 2px 4px; margin-bottom: 4px; }
-    .zoom-btn { width: 20px; height: 20px; font-size: 0.85rem; }
-    .zoom-reset { padding: 0 6px; font-size: 0.6rem; }
-    .zoom-value { min-width: 28px; font-size: 0.6rem; }
-    .view-panel-title { top: 5px; left: 5px; padding: 2px 8px; font-size: 0.6rem; }
-    .stats-bar { padding: 5px 0; }
-    .stat-value { font-size: 0.85rem; }
-    .stat-label { font-size: 0.58rem; }
-    .debug-log { max-height: 80px; font-size: 0.58rem; }
-    .empty-state { padding: 20px; }
-    .empty-state-text { font-size: 0.78rem; }
-    .spinner { width: 14px; height: 14px; }
-    .loader { font-size: 0.7rem; }
+    .filter-btn { font-size: 0.65rem; padding: 5px 2px; }
+    .btn { font-size: 0.72rem; padding: 6px 8px; }
+    .panel-zoom { gap: 1px; padding: 2px 4px; }
+    .zoom-btn { width: 18px; height: 18px; font-size: 0.8rem; }
+    .zoom-reset { padding: 0 5px; font-size: 0.58rem; }
+    .zoom-value { min-width: 26px; font-size: 0.58rem; }
+    .zoom-edit-btn, .zoom-del-btn { font-size: 0.6rem; padding: 0 6px; }
 }

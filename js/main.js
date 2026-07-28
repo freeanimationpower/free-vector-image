@@ -519,3 +519,15 @@ initZoom();
 initExport();
 _updateUI();
 _updateEngineBadge();
+
+// Sidebar toggle (mobile)
+var sidebarToggle = document.getElementById('sidebarToggle');
+if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', function () {
+        var sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('collapsed');
+            sidebarToggle.classList.toggle('active');
+        }
+    });
+}
