@@ -186,7 +186,8 @@ function _updateEngineBadge() {
         badge.textContent = 'Cargando...';
         badge.className = 'header-badge loading';
     } else if (state.engine === 'vtracer') {
-        badge.textContent = state.svgoReady ? 'VTracer + SVGO' : 'VTracer WASM';
+        badge.innerHTML = '<a href="https://github.com/visioncortex/vtracer" target="_blank" rel="noopener">' +
+            (state.svgoReady ? 'VTracer + SVGO' : 'VTracer WASM') + '</a>';
         badge.className = 'header-badge';
     } else {
         badge.textContent = state.svgoReady ? 'ImageTracer + SVGO' : 'ImageTracer';
