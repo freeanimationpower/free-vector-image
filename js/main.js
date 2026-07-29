@@ -387,11 +387,12 @@ function _exitEditIfActive() {
 
 // ─── ZOOM ──────────────────────────────
 function initZoom() {
-    document.querySelectorAll('.zoom-btn').forEach(btn => {
+    document.querySelectorAll('.zoom-btn[data-panel]').forEach(btn => {
         btn.addEventListener('click', () => {
             const panel = btn.dataset.panel;
             const action = btn.dataset.action;
             const z = zoom[panel];
+            if (!z || !action) return;
             if (action === 'in')   z.level = Math.min(z.level * 1.3, 4.0);
             if (action === 'out')  z.level = Math.max(z.level / 1.3, 0.25);
             if (action === 'reset') { z.level = 1.0; z.panX = 0; z.panY = 0; }
