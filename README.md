@@ -1,5 +1,10 @@
 # Vectorizador Pro — Free Animation Power
 
+<img width="1254" height="1254" alt="free vector images" src="https://github.com/user-attachments/assets/a83e2673-5e35-4391-a524-7f052a1cbbec" />
+
+
+
+
 Herramienta web **100% Client-Side** para convertir imágenes rasterizadas (PNG, JPG, WebP) a vectores escalables (SVG, EPS) y PNG. Motor de vectorización VTracer WebAssembly + SVGO post-procesador + ImageTracer fallback. Diseño FAP corporativo (#ffdc00 / #ff4200).
 
 ---
