@@ -9,7 +9,7 @@
   <img src="docs/screenshot.png" alt="Free Vector Image — convierte bocetos y logos en vectores escalables" width="860">
 </p>
 
-## 🎬 Videos
+## 🎬 Vídeos
 
 📺 Canal oficial: [@freeanimationpower](https://www.youtube.com/@freeanimationpower)
 
@@ -17,7 +17,7 @@
 |---|---|
 | <a href="https://youtu.be/xLhHxCLt3v0"><img src="https://i.ytimg.com/vi/xLhHxCLt3v0/hqdefault.jpg" width="240"></a> | [Convierte cualquier boceto, logo o ilustración en vector escalable al infinito](https://youtu.be/xLhHxCLt3v0) |
 
-> **Documentacion Tecnica**: [Informe Tecnico Free Vector Image](informes_pdf/06_Free_Vector_Image.pdf) — Documento completo de arquitectura, pipeline de vectorizacion VTracer WASM, sistema de filtros y especificaciones tecnicas.
+> **Documentacion Técnica**: [Informe Técnico Free Vector Image](informes_pdf/06_Free_Vector_Image.pdf) — Documento completo de arquitectura, pipeline de vectorización VTracer WASM, sistema de filtros y especificaciones técnicas.
 
 > **Accede directamente**: [freeanimationpower.org/tools/vector/](https://freeanimationpower.org/tools/vector/) — Vectoriza imagenes sin instalar nada.
 
@@ -120,7 +120,7 @@ Arquitectura híbrida:
 2. SVGO como post-procesador (914 KB, carga async)
 3. ImageTracer.js como fallback automático (47 KB) si WASM no carga
 4. Gaussian Blur selectivo (kernel 3×3, diferencia Manhattan < 20)
-5. Parámetros VTracer: mode (spline/polygon/pixel), hierarchical (mosaic/stacked), cornerThreshold, maxIterations, filterSpeckle, colorPrecision
+5. Parámetros VTracer: mode (spline/polygon/píxel), hierarchical (mosaic/stacked), cornerThreshold, maxIterations, filterSpeckle, colorPrecision
 6. Parámetros ImageTracer: smoothness, colorLayers, minPathSize
 
 ### Fase 5 — Web Worker + ES Modules + Debug
@@ -234,11 +234,11 @@ flowchart LR
     classDef ext fill:#ffffff,stroke:#1a1a1a,color:#1a1a1a,stroke-width:2px;
         IMG["Imagen de entrada<br/>PNG · JPG · boceto o logo"] --> PRE["Preprocesador<br/>filtros · limpieza · contraste"]
         PRE --> WRK["Web Worker + ES Modules<br/>procesamiento sin bloquear la UI"]
-        subgraph ENGINES["Motores de vectorizacion"]
+        subgraph ENGINES["Motores de vectorización"]
             direction TB
             VT["VTracer — principal<br/>curvas Bezier de calidad"]
-            SV["SVGO — optimizacion<br/>SVG compacto"]
-            IT["ImageTracer — fallback<br/>maxima compatibilidad"]
+            SV["SVGO — optimización<br/>SVG compacto"]
+            IT["ImageTracer — fallback<br/>máxima compatibilidad"]
         end
         WRK --> VT
         WRK --> IT
@@ -329,7 +329,7 @@ vectorizador/
 │   ├── worker.js                     (7.9 KB)   Module Worker — pipeline
 │   ├── vtracerBridge.js              (14.4 KB)  ES Module — WASM bridge
 │   ├── preprocessor.js               (4.5 KB)   ES Module — in-place + canvas
-│   ├── filters.js                    (1.7 KB)   ES Module — pixel filters
+│   ├── filters.js                    (1.7 KB)   ES Module — píxel filters
 │   ├── svgOptimizer.js               (1.4 KB)   ES Module — SVGO wrapper
 │   ├── utils.js                      (1.1 KB)   ES Module — pure helpers
 │   ├── geometryDetector.js           (4.0 KB)   ES Module — Fase 5 skeleton
@@ -369,7 +369,7 @@ Estructura semántica con 4 secciones principales:
 |---|---|
 | **Importar Imagen** | Zona drag & drop `#uploadZone` + `<input type="file">` oculto |
 | **Estilo de Imagen** | Grid 2×2 filtros (Color/B&N/Grises/Posterizar) + sliders condicionales (umbral BN, niveles posterizar) + checkbox Gaussian Blur |
-| **Motor de Vectorización** | Selector de modo (Spline/Polygon/Pixel) + composición (Mosaic/Stacked) + 6 sliders VTracer. Sliders ImageTracer (visibles solo en fallback). Botón Vectorizar + loader + stats bar (Nodos/Trazos/Tiempo) |
+| **Motor de Vectorización** | Selector de modo (Spline/Polygon/Píxel) + composición (Mosaic/Stacked) + 6 sliders VTracer. Sliders ImageTracer (visibles solo en fallback). Botón Vectorizar + loader + stats bar (Nodos/Trazos/Tiempo) |
 | **Exportar** | Selector formato (SVG/PNG/EPS) + resolución PNG (1x/2x/4x) + botón Descargar |
 | **Debug Pipeline** | Panel de diagnóstico: Motor, Canvas, Transfer, Preprocess, VTracer, SVGO, Result + log en vivo |
 
@@ -1280,7 +1280,7 @@ vectorize_bytes(data_ptr, data_len, options) → (out_ptr, out_len, error_flag)
 
 ```javascript
 {
-    mode: 'spline' | 'polygon' | 'pixel',    // Tipo de ajuste de curvas
+    mode: 'spline' | 'polygon' | 'píxel',    // Tipo de ajuste de curvas
     hierarchical: 'stacked' | 'cutout',       // 'cutout' = mosaic seam-free
     colorMode: 'color' | 'bw',               // Modo color o binario
     filterSpeckle: 0-128,                    // Filtro anti-ruido (px²)
@@ -1308,7 +1308,7 @@ vectorize_bytes(data_ptr, data_len, options) → (out_ptr, out_len, error_flag)
 |---|---|---|
 | **Spline** | Cubic Bézier con least-squares iterativo + detección de esquinas + splice merging | Fotos, ilustraciones, gráficos con curvas |
 | **Polygon** | Douglas-Peucker simplificado con líneas rectas | Logos geométricos, iconos |
-| **Pixel** | Líneas exactas en la grilla de píxeles (sin simplificar) | Pixel art, sprites retro |
+| **Píxel** | Líneas exactas en la grilla de píxeles (sin simplificar) | Píxel art, sprites retro |
 
 ### Modos de Composición
 
