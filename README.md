@@ -228,22 +228,22 @@ Reducido a `1024` (desde 2048) para evitar OOM en VTracer. El padding se suma de
 
 ```mermaid
 flowchart LR
-%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#ffdc00', 'primaryBorderColor': '#1a1a1a', 'primaryTextColor': '#1a1a1a', 'lineColor': '#ff4200', 'fontFamily': 'Segoe UI'}}}%%
     classDef ui fill:#ffdc00,stroke:#1a1a1a,color:#1a1a1a,stroke-width:2px;
     classDef engine fill:#ff4200,stroke:#1a1a1a,color:#ffffff,stroke-width:2px;
     classDef data fill:#1a1a1a,stroke:#ff4200,color:#ffffff,stroke-width:2px;
-    classDef ext fill:#ffffff,stroke:#1a1a1a,color:#1a1a1a,stroke-width:2px,stroke-dasharray:6 3;
-        IMG["🖼️ Imagen de entrada<br/>PNG · JPG · boceto o logo"] --> PRE["🧹 Preprocesador<br/>filtros · limpieza · contraste"]
-        PRE --> WRK["⚙️ Web Worker + ES Modules<br/>procesamiento sin bloquear la UI"]
-        subgraph ENGINES["🔧 Motores de vectorización"]
+    classDef ext fill:#ffffff,stroke:#1a1a1a,color:#1a1a1a,stroke-width:2px;
+        IMG["Imagen de entrada<br/>PNG · JPG · boceto o logo"] --> PRE["Preprocesador<br/>filtros · limpieza · contraste"]
+        PRE --> WRK["Web Worker + ES Modules<br/>procesamiento sin bloquear la UI"]
+        subgraph ENGINES["Motores de vectorizacion"]
             direction TB
-            VT["VTracer — principal<br/>curvas Bézier de calidad"]
-            SV["SVGO — optimización<br/>SVG compacto"]
-            IT["ImageTracer — fallback<br/>máxima compatibilidad"]
+            VT["VTracer — principal<br/>curvas Bezier de calidad"]
+            SV["SVGO — optimizacion<br/>SVG compacto"]
+            IT["ImageTracer — fallback<br/>maxima compatibilidad"]
         end
-        WRK --> VT --> SV
+        WRK --> VT
         WRK --> IT
-        SV --> OUT["📐 SVG escalable al infinito<br/>sin subir archivos a ningún servidor"]
+        VT --> SV
+        SV --> OUT["SVG escalable al infinito<br/>sin subir archivos a ningun servidor"]
         IT --> OUT
         class IMG,PRE ui
         class WRK,VT,SV,IT engine
