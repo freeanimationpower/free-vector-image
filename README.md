@@ -1,4 +1,21 @@
 # Vectorizador Pro — Free Animation Power
+<p align="center">
+  <a href="https://freeanimationpower.org"><img src="https://img.shields.io/badge/Web_Hub-freeanimationpower.org-ffdc00?style=for-the-badge" alt="Web Hub"></a>
+  <a href="https://www.youtube.com/@freeanimationpower"><img src="https://img.shields.io/badge/YouTube-@freeanimationpower-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://github.com/freeanimationpower"><img src="https://img.shields.io/badge/GitHub-freeanimationpower-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="Free Vector Image — convierte bocetos y logos en vectores escalables" width="860">
+</p>
+
+## 🎬 Videos
+
+📺 Canal oficial: [@freeanimationpower](https://www.youtube.com/@freeanimationpower)
+
+| Vídeo | Título |
+|---|---|
+| <a href="https://youtu.be/xLhHxCLt3v0"><img src="https://i.ytimg.com/vi/xLhHxCLt3v0/hqdefault.jpg" width="240"></a> | [Convierte cualquier boceto, logo o ilustración en vector escalable al infinito](https://youtu.be/xLhHxCLt3v0) |
 
 > **Documentacion Tecnica**: [Informe Tecnico Free Vector Image](informes_pdf/06_Free_Vector_Image.pdf) — Documento completo de arquitectura, pipeline de vectorizacion VTracer WASM, sistema de filtros y especificaciones tecnicas.
 
@@ -9,7 +26,7 @@
 
 
 
-Herramienta web **100% Client-Side** para convertir imágenes rasterizadas (PNG, JPG, WebP) a vectores escalables (SVG, EPS) y PNG. Motor de vectorización VTracer WebAssembly + SVGO post-procesador + ImageTracer fallback. Diseño FAP corporativo (#ffdc00 / #ff4200).
+Herramienta web **100% Client-Side** para convertir imágenes rasterizadas (PNG, JPG, WebP) a vectores escalables (SVG, EPS) y PNG. Motor de vectorización VTracer WebAssembly + SVGO post-procesador + ImageTracer fallback. Diseño Free Animation Power corporativo (#ffdc00 / #ff4200).
 
 ---
 
@@ -193,7 +210,7 @@ Arrastre con clic sostenido (estilo H de Photoshop) en ambos paneles:
 - Cursor `grab` / `grabbing`
 - Botón Reset restablece zoom + posición
 
-#### Rediseño UI — Identidad FAP
+#### Rediseño UI — Identidad Free Animation Power
 
 - Paleta: fondo `#ffdc00`, acento `#ff4200`, superficies blancas, header negro
 - Fuentes: Outfit + Plus Jakarta Sans (Google Fonts)
@@ -317,7 +334,7 @@ Estructura semántica con 4 secciones principales:
 
 | Elemento | ID / Clase | Propósito |
 |---|---|---|
-| `<header>` | `.header` | Logo FAP + badge del motor activo (VTracer WASM / ImageTracer / Cargando) |
+| `<header>` | `.header` | Logo Free Animation Power + badge del motor activo (VTracer WASM / ImageTracer / Cargando) |
 | `<aside>` | `.sidebar` | 5 secciones colapsables: Importar, Estilos, Motor, Exportar, Debug |
 | `<main>` | `.workspace` | Vista dual con zoom independiente |
 | `<div>` | `.view-panel` (×2) | Panel izquierdo (Original) + Panel derecho (Vector SVG) |
@@ -357,7 +374,7 @@ Sistema de diseño Dark Mode con variables CSS. 557 líneas.
 --border-color: #2a2a2a;   /* Bordes */
 --text-main: #e8e8e8;      /* Texto principal */
 --text-muted: #888;        /* Labels */
---accent: #ff6b00;         /* Naranja FAP */
+--accent: #ff6b00;         /* Naranja Free Animation Power */
 --accent-hover: #ff8533;
 --accent-glow: rgba(255,107,0,0.15);
 --green: #28a745;          /* Botón descarga */
@@ -1344,7 +1361,7 @@ Si el motor es ImageTracer fallback, se añade sufijo `-it`.
 %!PS-Adobe-3.0 EPSF-3.0
 %%BoundingBox: 0 0 800 600
 %%Title: Vectorized by Free Animation Power
-%%Creator: FAP Vectorizer Pro
+%%Creator: Free Animation Power Vectorizer Pro
 %%LanguageLevel: 2
 %%EndComments
 
@@ -1515,7 +1532,7 @@ Para diagnosticar problemas, abrir la sección "Debug Pipeline" en la sidebar. M
 | **Fase 3** | Investigación profunda de ImageTracer.js (9 bugs documentados), VTracer, SVGO, Vectorizer.AI |
 | **Fase 4** | Pipeline unificado VTracer WASM + SVGO + ImageTracer fallback. Gaussian Blur selectivo |
 | **Fase 5** | Web Worker + ES Modules + Debug + Zoom independiente. 14 archivos reescritos. `aiOptimizer.js` y `vectorizer.js` eliminados |
-| **Fase 5.1 (2026)** | Padding perimetral + `Uint32Array` blur + EPS off-thread + Worker recreation + Pan drag + Rediseño FAP + 6 fixes WASM |
+| **Fase 5.1 (2026)** | Padding perimetral + `Uint32Array` blur + EPS off-thread + Worker recreation + Pan drag + Rediseño Free Animation Power + 6 fixes WASM |
 
 ---
 
